@@ -46,6 +46,7 @@ func TestGistCommentsWebUI(t *testing.T) {
 	require.Contains(t, string(body), "Nice post!")
 	require.Contains(t, string(body), "alice")
 	require.Contains(t, string(body), `id="new-comment-content"`)
+	require.Contains(t, string(body), `class="markdown markdown-body p-8 text-sm text-slate-700 dark:text-slate-300"`)
 	require.Greater(t, strings.LastIndex(string(body), `id="new-comment-content"`), strings.LastIndex(string(body), "Nice post!"))
 }
 
@@ -75,6 +76,9 @@ func TestGistCommentsEditAndDeleteWebUI(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, string(body), fmt.Sprintf("/comments/%d/edit", commentID))
 	require.Contains(t, string(body), fmt.Sprintf("/comments/%d/delete", commentID))
+	require.Contains(t, string(body), `data-comment-edit-button`)
+	require.Contains(t, string(body), `data-comment-edit-panel`)
+	require.Contains(t, string(body), `hidden mt-4 space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4`)
 
 	resp = s.Request(t, "POST", "/"+username+"/"+identifier+"/comments/"+fmt.Sprintf("%d", commentID)+"/edit", url.Values{"content": {"Edited comment"}}, 302)
 	require.Contains(t, resp.Header.Get("Location"), "#comments")

@@ -38,6 +38,34 @@ document.querySelectorAll('.md-code-copy-btn').forEach(button => {
     });
 });
 
+document.querySelectorAll<HTMLElement>('[data-comment-id]').forEach((comment) => {
+    const view = comment.querySelector<HTMLElement>('.comment-view');
+    const editPanel = comment.querySelector<HTMLElement>('[data-comment-edit-panel]');
+    const editButton = comment.querySelector<HTMLButtonElement>('[data-comment-edit-button]');
+    const cancelButton = comment.querySelector<HTMLButtonElement>('[data-comment-edit-cancel]');
+    const textarea = comment.querySelector<HTMLTextAreaElement>('textarea[name="content"]');
+
+    if (!view || !editPanel || !editButton || !cancelButton || !textarea) {
+        return;
+    }
+
+    const openEditor = () => {
+        view.classList.add('hidden');
+        editPanel.classList.remove('hidden');
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    };
+
+    const closeEditor = () => {
+        editPanel.classList.add('hidden');
+        view.classList.remove('hidden');
+        editButton.focus();
+    };
+
+    editButton.addEventListener('click', openEditor);
+    cancelButton.addEventListener('click', closeEditor);
+});
+
 let checkboxes = document.querySelectorAll('li[data-checkbox-nb] input[type=checkbox]');
 if (document.getElementById('gist').dataset.own) {
     document.querySelectorAll<HTMLElement>('li[data-checkbox-nb]').forEach((el) => {
