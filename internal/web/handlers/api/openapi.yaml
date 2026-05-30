@@ -127,6 +127,44 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "503": { $ref: "#/components/responses/ApiDisabled" }
 
+  /api/v1/gists/{uuid}/comments:
+    parameters:
+      - { name: uuid, in: path, required: true, schema: { type: string } }
+    get:
+      summary: List comments for a gist
+      tags: [Gists]
+      responses:
+        "200":
+          description: Comment list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Comment" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "503": { $ref: "#/components/responses/ApiDisabled" }
+    post:
+      summary: Add a comment to a gist
+      tags: [Gists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateCommentRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Comment" }
+        "400": { $ref: "#/components/responses/ValidationFailed" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "503": { $ref: "#/components/responses/ApiDisabled" }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -174,6 +212,24 @@ components:
             content: { type: string }
             binary: { type: boolean }
             truncated: { type: boolean }
+
+    CommentUser:
+      type: object
+      required: [id, username]
+      properties:
+        id: { type: integer }
+        username: { type: string }
+
+    Comment:
+      type: object
+      required: [id, content, html, created_at, updated_at, user]
+      properties:
+        id: { type: integer }
+        content: { type: string }
+        html: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        user: { $ref: "#/components/schemas/CommentUser" }
 
     GistSummary:
       type: object
@@ -246,6 +302,12 @@ components:
         files:
           type: array
           items: { $ref: "#/components/schemas/FileInput" }
+
+    CreateCommentRequest:
+      type: object
+      required: [content]
+      properties:
+        content: { type: string }
 
   responses:
     Unauthorized:

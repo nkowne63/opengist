@@ -133,6 +133,7 @@ func (s *Server) registerRoutes() {
 			sC.POST("/edit", gist.ProcessCreate, logged, writePermission)
 			sC.POST("/like", gist.Like, logged)
 			sC.GET("/likes", gist.Likes, checkRequireLogin)
+			sC.POST("/comments", gist.AddComment, logged)
 			sC.POST("/fork", gist.Fork, logged)
 			sC.GET("/forks", gist.Forks, checkRequireLogin)
 			sC.PUT("/checkbox", gist.Checkbox, logged, writePermission)
@@ -171,7 +172,9 @@ func (s *Server) registerRoutes() {
 		apiV1.GET("/gists", apiv1.ListGists, apiScopeGistRead)
 		apiV1.GET("/gists/:uuid", apiv1.GetGist, apiScopeGistRead)
 		apiV1.GET("/gists/:uuid/files/:filename/raw", apiv1.RawFile, apiScopeGistRead)
+		apiV1.GET("/gists/:uuid/comments", apiv1.ListComments, apiScopeGistRead)
 		apiV1.POST("/gists", apiv1.CreateGist, apiScopeGistWrite)
+		apiV1.POST("/gists/:uuid/comments", apiv1.CreateComment, apiScopeGistWrite)
 		apiV1.PATCH("/gists/:uuid", apiv1.UpdateGist, apiScopeGistWrite)
 		apiV1.DELETE("/gists/:uuid", apiv1.DeleteGist, apiScopeGistWrite)
 	}

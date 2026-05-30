@@ -30,6 +30,11 @@ gist.watch-full-file: View the full file.
 gist.file-not-valid: This file is not a valid CSV file.
 gist.no-content: No files found
 gist.preview-non-available: Preview not available
+gist.comments: Comments
+gist.comments.no-comments: No comments yet
+gist.comments.add: Add a comment
+gist.comments.post: Post comment
+gist.comments.login: Sign in to add a comment
 
 gist.new.new_gist: New gist
 gist.new.title: Title

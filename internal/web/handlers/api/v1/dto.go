@@ -20,6 +20,20 @@ type UserResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type CommentUser struct {
+	ID       uint   `json:"id"`
+	Username string `json:"username"`
+}
+
+type Comment struct {
+	ID        uint        `json:"id"`
+	Content   string      `json:"content"`
+	HTML      string      `json:"html"`
+	CreatedAt time.Time   `json:"created_at"`
+	UpdatedAt time.Time   `json:"updated_at"`
+	User      CommentUser `json:"user"`
+}
+
 // --- Gist ---
 
 type FileSummary struct {
@@ -90,4 +104,8 @@ type UpdateGistRequest struct {
 	Description *string      `json:"description,omitempty"`
 	Visibility  *string      `json:"visibility,omitempty"`
 	Files       *[]FileInput `json:"files,omitempty"` // nil = no change; non-nil = full replace
+}
+
+type CreateCommentRequest struct {
+	Content string `json:"content" form:"content"`
 }
