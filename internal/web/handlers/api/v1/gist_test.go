@@ -66,6 +66,18 @@ func TestCreateGist(t *testing.T) {
 	require.Equal(t, "hello world", resp.Files[0].Content)
 }
 
+func TestCreateGist_DefaultVisibilityIsPrivate(t *testing.T) {
+	s, tok := setupAPIUser(t)
+
+	req := v1.CreateGistRequest{
+		Title: "Hello",
+		Files: []v1.FileInput{{Filename: "a.txt", Content: "hello world"}},
+	}
+	var resp v1.GistDetail
+	s.APIRequestUnmarshal(t, "POST", "/api/v1/gists", tok, req, &resp, 201)
+	require.Equal(t, "private", resp.Visibility)
+}
+
 func TestCreateGist_EmptyFiles(t *testing.T) {
 	s, tok := setupAPIUser(t)
 	req := v1.CreateGistRequest{Title: "x", Visibility: "public", Files: []v1.FileInput{}}

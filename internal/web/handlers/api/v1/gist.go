@@ -273,7 +273,10 @@ func CreateGist(ctx *context.Context) error {
 		return WriteJSONError(ctx, 400, "validation_failed", "files: at least one file required")
 	}
 
-	visibility := db.ParseVisibility[string](req.Visibility)
+	visibility := db.PrivateVisibility
+	if req.Visibility != "" {
+		visibility = db.ParseVisibility[string](req.Visibility)
+	}
 
 	fileDTOs := make([]db.FileDTO, 0, len(req.Files))
 	for _, f := range req.Files {

@@ -1,6 +1,7 @@
 package gist_test
 
 import (
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -50,7 +51,10 @@ func TestGistCreationPage(t *testing.T) {
 
 	t.Run("Authenticated", func(t *testing.T) {
 		s.Login(t, "thomas")
-		s.Request(t, "GET", "/", nil, 200)
+		resp := s.Request(t, "GET", "/", nil, 200)
+		body, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		require.Contains(t, string(body), `name="private" value="2"`)
 	})
 }
 
