@@ -42,7 +42,7 @@ func GistIndex(ctx *context.Context) error {
 	ctx.SetData("files", renderedFiles)
 	ctx.SetData("hasMoreFiles", hasMoreFiles)
 	ctx.SetData("revision", revision)
-	comments, err := loadCommentViews(gist.ID)
+	comments, err := loadCommentViews(gist, ctx.User)
 	if err != nil {
 		return ctx.ErrorRes(500, "Error fetching comments", err)
 	}

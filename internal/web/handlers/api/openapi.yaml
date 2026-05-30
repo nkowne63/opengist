@@ -165,6 +165,39 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "503": { $ref: "#/components/responses/ApiDisabled" }
 
+  /api/v1/gists/{uuid}/comments/{comment_id}:
+    parameters:
+      - { name: uuid, in: path, required: true, schema: { type: string } }
+      - { name: comment_id, in: path, required: true, schema: { type: integer } }
+    patch:
+      summary: Update a gist comment
+      tags: [Gists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateCommentRequest" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Comment" }
+        "400": { $ref: "#/components/responses/ValidationFailed" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "503": { $ref: "#/components/responses/ApiDisabled" }
+    delete:
+      summary: Delete a gist comment
+      tags: [Gists]
+      responses:
+        "204": { description: Deleted }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "503": { $ref: "#/components/responses/ApiDisabled" }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -304,6 +337,12 @@ components:
           items: { $ref: "#/components/schemas/FileInput" }
 
     CreateCommentRequest:
+      type: object
+      required: [content]
+      properties:
+        content: { type: string }
+
+    UpdateCommentRequest:
       type: object
       required: [content]
       properties:

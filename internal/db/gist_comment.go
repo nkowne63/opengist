@@ -29,10 +29,37 @@ func (c *GistComment) Create() error {
 	return db.Create(c).Error
 }
 
+func (c *GistComment) Update() error {
+	c.UpdatedAt = time.Now().Unix()
+	return db.Model(&GistComment{}).
+		Where("id = ?", c.ID).
+		Updates(map[string]interface{}{
+			"content":    c.Content,
+			"updated_at": c.UpdatedAt,
+		}).Error
+}
+
+func (c *GistComment) Delete() error {
+	return db.Delete(&GistComment{}, c.ID).Error
+}
+
+func GetGistCommentByID(id uint) (*GistComment, error) {
+	var comment GistComment
+	err := db.
+		Preload("User").
+		Preload("Gist").
+		First(&comment, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &comment, nil
+}
+
 func GetGistComments(gistID uint) ([]*GistComment, error) {
 	var comments []*GistComment
 	err := db.
 		Preload("User").
+		Preload("Gist").
 		Where("gist_id = ?", gistID).
 		Order("created_at asc, id asc").
 		Find(&comments).Error

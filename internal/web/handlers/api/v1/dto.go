@@ -109,3 +109,7 @@ type UpdateGistRequest struct {
 type CreateCommentRequest struct {
 	Content string `json:"content" form:"content"`
 }
+
+type UpdateCommentRequest struct {
+	Content string `json:"content" form:"content"`
+}

@@ -35,6 +35,9 @@ gist.comments.no-comments: No comments yet
 gist.comments.add: Add a comment
 gist.comments.post: Post comment
 gist.comments.login: Sign in to add a comment
+gist.comments.edit: Edit comment
+gist.comments.save: Save changes
+gist.comments.delete: Delete comment
 
 gist.new.new_gist: New gist
 gist.new.title: Title

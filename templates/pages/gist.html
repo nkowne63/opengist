@@ -136,21 +136,6 @@
             <span class="text-sm text-slate-500 dark:text-slate-400">{{ len .comments }}</span>
         </div>
 
-        {{ if .userLogged }}
-        <form method="post" action="{{ $.baseHttpUrl }}/{{ $.gist.User.Username }}/{{ $.gist.Identifier }}/comments" class="rounded-md border border-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 space-y-3">
-            {{ .csrfHtml }}
-            <label for="comment-content" class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ .locale.Tr "gist.comments.add" }}</label>
-            <textarea id="comment-content" name="content" rows="4" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200" placeholder="{{ .locale.Tr "gist.comments.add" }}"></textarea>
-            <div class="flex justify-end">
-                <button type="submit" class="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500">{{ .locale.Tr "gist.comments.post" }}</button>
-            </div>
-        </form>
-        {{ else }}
-        <div class="rounded-md border border-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
-            {{ .locale.Tr "gist.comments.login" }}
-        </div>
-        {{ end }}
-
         {{ if .comments }}
         <div class="space-y-4">
             {{ range $comment := .comments }}
@@ -160,12 +145,43 @@
                     <div class="text-slate-500 dark:text-slate-400">{{ humanDate $comment.CreatedAt }}</div>
                 </div>
                 <div class="markdown markdown-body text-sm text-slate-700 dark:text-slate-300">{{ $comment.HTML }}</div>
+                {{ if $comment.CanEdit }}
+                <div class="mt-4 space-y-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <form method="post" action="{{ $.baseHttpUrl }}/{{ $.gist.User.Username }}/{{ $.gist.Identifier }}/comments/{{ $comment.ID }}/edit" class="space-y-3">
+                        {{ $.csrfHtml }}
+                        <label for="comment-edit-content-{{ $comment.ID }}" class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $.locale.Tr "gist.comments.edit" }}</label>
+                        <textarea id="comment-edit-content-{{ $comment.ID }}" name="content" rows="4" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200">{{ $comment.Content }}</textarea>
+                        <div class="flex justify-end">
+                            <button type="submit" class="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500">{{ $.locale.Tr "gist.comments.save" }}</button>
+                        </div>
+                    </form>
+                    <form method="post" action="{{ $.baseHttpUrl }}/{{ $.gist.User.Username }}/{{ $.gist.Identifier }}/comments/{{ $comment.ID }}/delete" class="flex justify-end">
+                        {{ $.csrfHtml }}
+                        <button type="submit" class="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50">{{ $.locale.Tr "gist.comments.delete" }}</button>
+                    </form>
+                </div>
+                {{ end }}
             </article>
             {{ end }}
         </div>
         {{ else }}
         <div class="rounded-md border border-dashed border-gray-200 dark:border-gray-700 px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
             {{ .locale.Tr "gist.comments.no-comments" }}
+        </div>
+        {{ end }}
+
+        {{ if .userLogged }}
+        <form method="post" action="{{ $.baseHttpUrl }}/{{ $.gist.User.Username }}/{{ $.gist.Identifier }}/comments" class="rounded-md border border-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 space-y-3">
+            {{ .csrfHtml }}
+            <label for="new-comment-content" class="block text-sm font-medium text-slate-700 dark:text-slate-300">{{ .locale.Tr "gist.comments.add" }}</label>
+            <textarea id="new-comment-content" name="content" rows="4" class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-slate-800 dark:text-slate-200" placeholder="{{ .locale.Tr "gist.comments.add" }}"></textarea>
+            <div class="flex justify-end">
+                <button type="submit" class="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500">{{ .locale.Tr "gist.comments.post" }}</button>
+            </div>
+        </form>
+        {{ else }}
+        <div class="rounded-md border border-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-slate-600 dark:text-slate-300">
+            {{ .locale.Tr "gist.comments.login" }}
         </div>
         {{ end }}
     </section>

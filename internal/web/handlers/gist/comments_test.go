@@ -1,6 +1,7 @@
 package gist_test
 
 import (
+	"fmt"
 	"io"
 	"net/url"
 	"strings"
@@ -39,12 +40,56 @@ func TestGistCommentsWebUI(t *testing.T) {
 	require.Equal(t, "Nice post!", comments[0].Content)
 	require.Equal(t, "alice", comments[0].User.Username)
 
-	s.Logout()
 	resp = s.Request(t, "GET", "/"+username+"/"+identifier, nil, 200)
 	body, err = io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	require.Contains(t, string(body), "Nice post!")
 	require.Contains(t, string(body), "alice")
+	require.Contains(t, string(body), `id="new-comment-content"`)
+	require.Greater(t, strings.LastIndex(string(body), `id="new-comment-content"`), strings.LastIndex(string(body), "Nice post!"))
+}
+
+func TestGistCommentsEditAndDeleteWebUI(t *testing.T) {
+	s := webtest.Setup(t)
+	defer webtest.Teardown(t)
+	s.Register(t, "admin")
+	s.Logout()
+	s.Register(t, "thomas")
+	s.Register(t, "alice")
+
+	s.Login(t, "thomas")
+	_, gist, username, identifier := s.CreateGistAs(t, "thomas", "0")
+	require.Equal(t, "thomas", username)
+
+	s.Login(t, "alice")
+	resp := s.Request(t, "POST", "/"+username+"/"+identifier+"/comments", url.Values{"content": {"Nice post!"}}, 302)
+	require.Contains(t, resp.Header.Get("Location"), "#comments")
+
+	comments, err := db.GetGistComments(gist.ID)
+	require.NoError(t, err)
+	require.Len(t, comments, 1)
+	commentID := comments[0].ID
+
+	resp = s.Request(t, "GET", "/"+username+"/"+identifier, nil, 200)
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	require.Contains(t, string(body), fmt.Sprintf("/comments/%d/edit", commentID))
+	require.Contains(t, string(body), fmt.Sprintf("/comments/%d/delete", commentID))
+
+	resp = s.Request(t, "POST", "/"+username+"/"+identifier+"/comments/"+fmt.Sprintf("%d", commentID)+"/edit", url.Values{"content": {"Edited comment"}}, 302)
+	require.Contains(t, resp.Header.Get("Location"), "#comments")
+
+	comments, err = db.GetGistComments(gist.ID)
+	require.NoError(t, err)
+	require.Len(t, comments, 1)
+	require.Equal(t, "Edited comment", comments[0].Content)
+
+	resp = s.Request(t, "POST", "/"+username+"/"+identifier+"/comments/"+fmt.Sprintf("%d", commentID)+"/delete", nil, 302)
+	require.Contains(t, resp.Header.Get("Location"), "#comments")
+
+	comments, err = db.GetGistComments(gist.ID)
+	require.NoError(t, err)
+	require.Empty(t, comments)
 }
 
 func TestGistCommentsRejectAnonymousPost(t *testing.T) {

@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
@@ -44,6 +45,23 @@ func commentsToResponse(comments []*db.GistComment) ([]Comment, error) {
 		resp = append(resp, item)
 	}
 	return resp, nil
+}
+
+func canWriteComment(comment *db.GistComment, gist *db.Gist, user *db.User) bool {
+	return user != nil && (comment.UserID == user.ID || gist.UserID == user.ID)
+}
+
+func lookupCommentByID(gist *db.Gist, commentID string) (*db.GistComment, *ErrorBody) {
+	id, err := strconv.ParseUint(commentID, 10, 64)
+	if err != nil {
+		return nil, &ErrorBody{Code: "not_found", Message: "comment not found"}
+	}
+
+	comment, err := db.GetGistCommentByID(uint(id))
+	if err != nil || comment.GistID != gist.ID {
+		return nil, &ErrorBody{Code: "not_found", Message: "comment not found"}
+	}
+	return comment, nil
 }
 
 // ListComments handles GET /api/v1/gists/:uuid/comments
@@ -96,4 +114,62 @@ func CreateComment(ctx *context.Context) error {
 		return WriteJSONError(ctx, 500, "internal_error", "failed to serialize comment")
 	}
 	return ctx.JSON(201, resp)
+}
+
+// UpdateComment handles PATCH /api/v1/gists/:uuid/comments/:comment_id
+func UpdateComment(ctx *context.Context) error {
+	g, errBody := lookupGistByUUID(ctx, ctx.Param("uuid"))
+	if errBody != nil {
+		return WriteJSONError(ctx, 404, errBody.Code, errBody.Message)
+	}
+
+	comment, errBody := lookupCommentByID(g, ctx.Param("comment_id"))
+	if errBody != nil {
+		return WriteJSONError(ctx, 404, errBody.Code, errBody.Message)
+	}
+	if !canWriteComment(comment, g, ctx.User) {
+		return WriteJSONError(ctx, 404, "not_found", "comment not found")
+	}
+
+	var req UpdateCommentRequest
+	if err := ctx.Bind(&req); err != nil {
+		return WriteJSONError(ctx, 400, "validation_failed", "invalid request body")
+	}
+
+	content := strings.TrimSpace(req.Content)
+	if content == "" {
+		return WriteJSONError(ctx, 400, "validation_failed", "content is required")
+	}
+
+	comment.Content = content
+	if err := comment.Update(); err != nil {
+		return WriteJSONError(ctx, 500, "internal_error", "failed to update comment")
+	}
+
+	resp, err := commentToResponse(comment, ctx.User)
+	if err != nil {
+		return WriteJSONError(ctx, 500, "internal_error", "failed to serialize comment")
+	}
+	return ctx.JSON(200, resp)
+}
+
+// DeleteComment handles DELETE /api/v1/gists/:uuid/comments/:comment_id
+func DeleteComment(ctx *context.Context) error {
+	g, errBody := lookupGistByUUID(ctx, ctx.Param("uuid"))
+	if errBody != nil {
+		return WriteJSONError(ctx, 404, errBody.Code, errBody.Message)
+	}
+
+	comment, errBody := lookupCommentByID(g, ctx.Param("comment_id"))
+	if errBody != nil {
+		return WriteJSONError(ctx, 404, errBody.Code, errBody.Message)
+	}
+	if !canWriteComment(comment, g, ctx.User) {
+		return WriteJSONError(ctx, 404, "not_found", "comment not found")
+	}
+
+	if err := comment.Delete(); err != nil {
+		return WriteJSONError(ctx, 500, "internal_error", "failed to delete comment")
+	}
+	return ctx.NoContent(204)
 }
